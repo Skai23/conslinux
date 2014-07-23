@@ -52,7 +52,11 @@ sudo mount.cifs //${SERVER}/${CONS_PATH} ${MOUNT_POINT} -o ${MOUNT_OPTIONS}
 
 #copy conslin driver
 #expected to have one in root of Consultant share
-sudo cp ${MOUNT_POINT}/conslin /usr/local/bin
+if [ -f ${MOUNT_POINT}/conslin ]; then
+    sudo cp ${MOUNT_POINT}/conslin /usr/local/bin
+else
+    sudo wget -O /usr/local/bin/conslin https://raw.githubusercontent.com/user2589/conslinux/master/conslin
+fi
 sudo chmod a+x /usr/local/bin/conslin
 
 if grep -q conslin /etc/rc.local; then
