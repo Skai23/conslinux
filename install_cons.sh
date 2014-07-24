@@ -15,12 +15,13 @@ EGID=`id -g`
 ESCAPED_FULLPATH=`python -c "import re;print re.escape('${SERVER}/${CONS_PATH}')"`
 MOUNT_OPTIONS=users,uid=${EUID},gid=${EGID},username=`whoami`,,password=,iocharset=utf8
 
+#smbfs is not in Ubuntu 14.04 repositories. To let it fail silently, it is installed separately
 sudo apt-get install smbfs
 sudo apt-get install cifs-utils wine wine-gecko
 
 #create mount point
 if [ ! -d ${MOUNT_POINT} ]; then
-    sudo mkdir ${MOUNT_POINT}
+    sudo mkdir -p ${MOUNT_POINT}
 fi
 
 #add server record to hosts file
@@ -64,17 +65,12 @@ if grep -q conslin /etc/rc.local; then
     sudo sed -i "/conslin/d" /etc/rc.local
 fi
 
-echo "
-#Consultant+
-/usr/local/bin/conslin
-" | sudo tee -a /etc/rc.local
+sudo sed -i "/^exit 0/i #Consultant+\n/usr/local/bin/conslin" /etc/rc.local
 
 sudo /usr/local/bin/conslin&
 
-#create wine
-#mkdir ~/.wine/dosdevices/unc/${SERVER}
-read -p "Winecfg will start now, just close the window as it opens. Now hit [Enter]"
-winecfg
+#create wine drive
+mkdir -p ~/.wine/dosdevices
 ln -s ${MOUNT_POINT} ~/.wine/dosdevices/y:
 
 wine Y:\\cons.exe /group /LINUX
